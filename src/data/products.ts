@@ -4,7 +4,7 @@ const img = (seed: string) =>
   `https://picsum.photos/seed/${seed}/640/800`
 
 export const PLACEHOLDER_IMAGES = {
-  
+  /** Optional reference to local mockup frame */
   mockupDir: '/mockups',
 } as const
 
