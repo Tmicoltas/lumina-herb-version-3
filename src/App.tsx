@@ -13,7 +13,7 @@ import { LoginPage } from './pages/Login'
 import { OrderHistoryPage } from './pages/OrderHistory'
 import { OrderSuccessPage } from './pages/OrderSuccess'
 import { ProductDetailPage } from './pages/ProductDetail'
-import { ProfilePage } from './pages/Profile'
+import { ProfilePage } from './pages/Porfile'
 import { RegisterPage } from './pages/Register'
 import { ShopCollectionPage } from './pages/ShopCollection'
 
