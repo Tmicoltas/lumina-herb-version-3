@@ -1,19 +1,20 @@
+/** Marketing home — image URLs (swap for CDN when ready). */
 export const HOME_IMAGES = {
   hero:
-    'https://images.unsplash.com/photo-1612817288484-6f916006741a?w=1200&q=85',
+    'https://res.cloudinary.com/dsybz6dpt/image/upload/v1776133537/image_2-2_yxrxvc.png',
   ritual:
-    'https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=900&q=85',
+    'https://res.cloudinary.com/dpymsjjnk/image/upload/v1778618063/image_3_kchfsy.png',
 } as const
 
 export type HomeFeaturedItem = {
   productId: string
- 
+  /** Bold line (e.g. goal vibe) */
   headline: string
-
+  /** Sub line (product type) */
   subline: string
 }
 
-
+/** Order matches 2×2 featured grid in mockup */
 export const HOME_FEATURED: HomeFeaturedItem[] = [
   { productId: 'lh-cbd-calm', headline: 'Relax', subline: 'CBD oil' },
   { productId: 'lh-night-serum', headline: 'Sleep', subline: 'Night serum' },
