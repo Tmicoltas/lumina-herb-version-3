@@ -27,10 +27,10 @@ export default function App() {
               <Route path="/" element={<LandingPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
+              <Route path="/shop" element={<ShopCollectionPage />} />
+              <Route path="/shop/:productId" element={<ProductDetailPage />} />
               <Route element={<ProtectedRoute />}>
                 <Route path="/home" element={<HomePage />} />
-                <Route path="/shop" element={<ShopCollectionPage />} />
-                <Route path="/shop/:productId" element={<ProductDetailPage />} />
                 <Route path="/cart" element={<CartPage />} />
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/order-success" element={<OrderSuccessPage />} />
