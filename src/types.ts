@@ -5,14 +5,14 @@ export type Product = {
   name: string
   price: number
   image: string
-
+  /** Shelf category for PDP / cart row */
   shopCategory: ShopCategory
   description: string
   badge?: string
   benefits: string[]
   ingredients: string[]
   howToUse: string
-
+  /** Filter sidebar — wellness goals */
   wellnessTags: string[]
   relatedIds: string[]
 }
@@ -45,6 +45,6 @@ export type Order = {
   totalAmount: number
   shipping: ShippingInfo
   status: OrderStatus
-
+  /** ISO date string */
   estimatedDelivery: string
 }
