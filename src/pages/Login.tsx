@@ -31,18 +31,30 @@ export function LoginPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   if (user) return <Navigate to="/home" replace />
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (!email.trim()) {
       setError('Please enter your email.')
       return
     }
+    if (!password) {
+      setError('Please enter your password.')
+      return
+    }
     setError('')
-    login(email.trim(), password)
-    navigate('/home', { replace: true })
+    setSubmitting(true)
+    try {
+      await login(email.trim(), password)
+      navigate('/home', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Login failed.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -83,8 +95,12 @@ export function LoginPage() {
             </div>
             {error ? <p className="lh-error">{error}</p> : null}
             <div className="lh-divider">Or continue with</div>
-            <button type="submit" className="lh-btn lh-btn--purple lh-btn--block">
-              Login
+            <button
+              type="submit"
+              className="lh-btn lh-btn--purple lh-btn--block"
+              disabled={submitting}
+            >
+              {submitting ? 'Logging in...' : 'Login'}
             </button>
             <button
               type="button"
