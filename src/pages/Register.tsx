@@ -7,13 +7,15 @@ export function RegisterPage() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [password, setPassword] = useState('')
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState('')
+  const [submitting, setSubmitting] = useState(false)
 
   if (user) return <Navigate to="/home" replace />
 
-  function onSubmit(e: FormEvent) {
+  async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (!name.trim() || !email.trim()) {
       setError('Please fill in name and email.')
@@ -28,8 +30,15 @@ export function RegisterPage() {
       return
     }
     setError('')
-    register(name.trim(), email.trim(), password)
-    navigate('/home', { replace: true })
+    setSubmitting(true)
+    try {
+      await register(name.trim(), email.trim(), password, phone)
+      navigate('/home', { replace: true })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Registration failed.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -71,6 +80,18 @@ export function RegisterPage() {
               />
             </div>
             <div className="lh-field">
+              <label htmlFor="reg-phone">Phone</label>
+              <input
+                id="reg-phone"
+                className="lh-input"
+                type="tel"
+                autoComplete="tel"
+                placeholder="(555) 123-4567"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+              />
+            </div>
+            <div className="lh-field">
               <label htmlFor="reg-pass">Password</label>
               <input
                 id="reg-pass"
@@ -95,8 +116,12 @@ export function RegisterPage() {
               />
             </div>
             {error ? <p className="lh-error">{error}</p> : null}
-            <button type="submit" className="lh-btn lh-btn--purple lh-btn--block">
-              Create account
+            <button
+              type="submit"
+              className="lh-btn lh-btn--purple lh-btn--block"
+              disabled={submitting}
+            >
+              {submitting ? 'Creating account...' : 'Create account'}
             </button>
           </form>
           <p className="lh-auth-switch lh-auth-switch--register">
