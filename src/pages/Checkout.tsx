@@ -10,19 +10,27 @@ import type { PaymentMethod, ShippingInfo } from '../types'
 
 export function CheckoutPage() {
   const navigate = useNavigate()
+
+  // Obtiene la información del usuario, carrito y órdenes
   const { user } = useAuth()
   const { lines, subtotal, clear } = useCart()
   const { placeOrder } = useOrders()
+
   const [pay, setPay] = useState<PaymentMethod>('card')
+  const [submitting, setSubmitting] = useState(false)
+  const [error, setError] = useState('')
+
+  // Inicializa el formulario con los datos del usuario autenticado
   const [form, setForm] = useState<ShippingInfo>({
     fullName: user?.displayName ?? '',
     email: user?.email ?? '',
     phone: user?.phone ?? '',
-    addressLine: '',
+    addressLine: user?.address ?? '',
     city: '',
     postalCode: '',
   })
 
+  // Convierte las líneas del carrito en productos completos
   const items = lines
     .map((line) => {
       const product = PRODUCTS.find((p) => p.id === line.productId)
@@ -31,23 +39,36 @@ export function CheckoutPage() {
     })
     .filter(Boolean) as { product: (typeof PRODUCTS)[number]; quantity: number }[]
 
+  // Calcula el resumen de costos de la compra
   const shippingFee = shippingForSubtotal(subtotal)
   const tax = 0
   const total = subtotal + shippingFee + tax
 
+  // Actualiza dinámicamente cualquier campo del formulario
   function patch<K extends keyof ShippingInfo>(key: K, v: ShippingInfo[K]) {
     setForm((f) => ({ ...f, [key]: v }))
   }
 
-  function onSubmit(e: FormEvent) {
+  // Procesa la orden, limpia el carrito y redirige al usuario
+  async function onSubmit(e: FormEvent) {
     e.preventDefault()
     if (items.length === 0) return
     void pay
-    const order = placeOrder(items, form)
-    clear()
-    navigate('/order-success', { replace: true, state: { order } })
+    setError('')
+    setSubmitting(true)
+
+    try {
+      const order = await placeOrder(items, form)
+      clear()
+      navigate('/order-success', { replace: true, state: { order } })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Checkout failed.')
+    } finally {
+      setSubmitting(false)
+    }
   }
 
+  // Muestra una vista alternativa cuando el carrito está vacío
   if (items.length === 0) {
     return (
       <PageLayout headerTone="dark" footerTone="dark" mainClassName="lh-main--checkout">
@@ -67,8 +88,10 @@ export function CheckoutPage() {
         <h1>Checkout</h1>
 
         <form onSubmit={onSubmit}>
+          {/* Formulario de información de envío */}
           <section className="lh-card-dark">
             <h2>Shipping Information</h2>
+
             <div className="lh-field-dark">
               <label htmlFor="co-name">Full Name</label>
               <input
@@ -80,6 +103,7 @@ export function CheckoutPage() {
                 onChange={(e) => patch('fullName', e.target.value)}
               />
             </div>
+
             <div className="lh-field-dark">
               <label htmlFor="co-addr">Address</label>
               <input
@@ -91,6 +115,7 @@ export function CheckoutPage() {
                 onChange={(e) => patch('addressLine', e.target.value)}
               />
             </div>
+
             <div className="lh-row2">
               <div className="lh-field-dark">
                 <label htmlFor="co-city">City</label>
@@ -103,6 +128,7 @@ export function CheckoutPage() {
                   onChange={(e) => patch('city', e.target.value)}
                 />
               </div>
+
               <div className="lh-field-dark">
                 <label htmlFor="co-zip">ZIP Code</label>
                 <input
@@ -115,6 +141,7 @@ export function CheckoutPage() {
                 />
               </div>
             </div>
+
             <div className="lh-field-dark">
               <label htmlFor="co-phone">Phone Number</label>
               <input
@@ -126,6 +153,7 @@ export function CheckoutPage() {
                 onChange={(e) => patch('phone', e.target.value)}
               />
             </div>
+
             <div className="lh-field-dark">
               <label htmlFor="co-email">Email</label>
               <input
@@ -139,8 +167,10 @@ export function CheckoutPage() {
             </div>
           </section>
 
+          {/* Selección del método de pago */}
           <section className="lh-card-dark">
             <h2>Payment Method</h2>
+
             <div className="lh-pay-toggle">
               <button
                 type="button"
@@ -148,6 +178,7 @@ export function CheckoutPage() {
                 onClick={() => setPay('card')}
               >
               </button>
+
               <button
                 type="button"
                 className={pay === 'wallet' ? 'lh-pay-opt lh-pay-opt--on' : 'lh-pay-opt'}
@@ -155,6 +186,7 @@ export function CheckoutPage() {
               >
               </button>
             </div>
+
             <div className="lh-field-dark">
               <label htmlFor="co-card">Card Number</label>
               <input
@@ -164,6 +196,7 @@ export function CheckoutPage() {
                 autoComplete="cc-number"
               />
             </div>
+
             <div className="lh-row2">
               <div className="lh-field-dark">
                 <label htmlFor="co-exp">Expiry Date</label>
@@ -174,6 +207,7 @@ export function CheckoutPage() {
                   autoComplete="cc-exp"
                 />
               </div>
+
               <div className="lh-field-dark">
                 <label htmlFor="co-cvv">CVV</label>
                 <input
@@ -186,27 +220,44 @@ export function CheckoutPage() {
             </div>
           </section>
 
+          {/* Resumen de la orden */}
           <section className="lh-card-dark" style={{ maxWidth: 420, margin: '0 auto' }}>
             <h2>Order Summary</h2>
+
             <div className="lh-sum-row">
               <span>Subtotal</span>
               <span>${subtotal.toFixed(2)}</span>
             </div>
+
             <div className="lh-sum-row">
               <span>Shipping</span>
               <span>${shippingFee.toFixed(2)}</span>
             </div>
+
             <div className="lh-sum-row">
               <span>Tax</span>
               <span>${tax.toFixed(2)}</span>
             </div>
+
             <div className="lh-sum-row lh-sum-row--total">
               <span>Total</span>
               <span>${total.toFixed(2)}</span>
             </div>
-            <button type="submit" className="lh-btn lh-btn--purple lh-btn--block" style={{ marginTop: 16 }}>
+
+            {error ? <p className="lh-error">{error}</p> : null}
+
+            <button
+              type="submit"
+              className="lh-btn lh-btn--purple lh-btn--block"
+              style={{ marginTop: 16 }}
+              disabled={submitting}
+            >
+              {submitting ? 'Placing order...' : 'Place Order'}
             </button>
-            <p className="lh-sum-note">Your information is secure and encrypted.</p>
+
+            <p className="lh-sum-note">
+              Your information is secure and encrypted.
+            </p>
           </section>
         </form>
       </div>
